@@ -74,9 +74,14 @@ class JdbcSessionImpl(
   }
 
   override def close(): Unit = {
+    super.close()
     Try {
       if (sessionConnection != null) {
         sessionConnection.close()
+      } else {
+        // if sessionConnection is null, it means the session is not created successfully,
+        // we should exit the process to avoid the zombie process.
+        System.exit(1)
       }
     } match {
       case Success(_) =>
@@ -84,7 +89,6 @@ class JdbcSessionImpl(
       case Failure(exception) =>
         warn("Failed to close session connection, ignored it.", exception)
     }
-    super.close()
   }
 
 }
